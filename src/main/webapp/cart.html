@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购物车 - 购物商城</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<!-- 顶部栏 -->
+<div class="top-bar">
+    <div class="container">
+        <div class="top-links">
+            <a href="#"><i class="fas fa-user"></i> 登录/注册</a>
+            <a href="#"><i class="fas fa-headset"></i> 客服中心</a>
+            <a href="#"><i class="fas fa-map-marker-alt"></i> 门店查询</a>
+        </div>
+    </div>
+</div>
+
+<!-- 主导航 -->
+<header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <h1><a href="index.html"><i class="fas fa-shopping-bag"></i> 购物商城</a></h1>
+                </div>
+
+                <div class="search-bar">
+                    <form class="search-form">
+                        <input type="text" placeholder="搜索商品..." class="search-input">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="nav-actions">
+                    <a href="cart.html" class="nav-action-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>购物车</span>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <a href="#" class="nav-action-item">
+                        <i class="fas fa-user"></i>
+                        <span>我的账户</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 分类导航 -->
+    <div class="category-nav">
+        <div class="container">
+            <div class="category-menu">
+                <a href="#" class="category-all"><i class="fas fa-bars"></i> 全部分类</a>
+                <a href="index.html">首页</a>
+                <a href="product.html">商品列表</a>
+                <a href="cart.html" class="active">购物车</a>
+                <a href="category-electronics.html">手机数码</a>
+                <a href="category-computer.html">电脑办公</a>
+                <a href="category-appliances.html">家用电器</a>
+                <a href="category-furniture.html">生活家具</a>
+                <a href="category-sports.html">运动专区</a>
+                <a href="category-beauty.html">美妆护理</a>
+                <a href="category-kitchen.html">居家厨具</a>
+                <a href="category-daily.html">日用文创</a>
+                <a href="category-clothing.html">服装精选</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="main-layout">
+        <!-- 左侧广告位 -->
+        <aside class="ad-sidebar left-sidebar">
+            <div class="ad-banner">
+                <div class="ad-placeholder">广告位</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div>
+                    <h2>我的购物车</h2>
+                    <div class="breadcrumb">首页 > 购物车</div>
+                </div>
+                <div class="cart-stats">共 <span id="cart-items-count">0</span> 件商品</div>
+            </div>
+
+            <!-- 购物车内容 -->
+            <div class="cart-layout">
+                <!-- 购物车商品列表 -->
+                <div class="cart-items">
+                    <div id="cart-items-container">
+                        <!-- 购物车商品会通过JavaScript动态加载 -->
+                    </div>
+
+                    <!-- 空购物车状态 -->
+                    <div id="empty-cart" class="empty-cart" style="display: none;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>购物车为空</h3>
+                        <p>快去选购一些商品吧！</p>
+                        <a href="product.html" class="btn btn-primary">去购物</a>
+                    </div>
+
+                    <!-- 购物车操作 -->
+                    <div class="cart-actions" id="cart-actions" style="display: none;">
+                        <div class="select-all">
+                            <input type="checkbox" id="selectAll">
+                            <label for="selectAll">全选</label>
+                        </div>
+                        <div class="batch-actions">
+                            <button class="btn btn-outline" onclick="moveToFavorites()">移入收藏</button>
+                            <button class="btn btn-danger" onclick="deleteSelected()">删除选中</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 购物车侧边栏 -->
+                <div class="cart-sidebar">
+                    <div class="cart-summary">
+                        <h3>订单汇总</h3>
+
+                        <div class="summary-row">
+                            <span>商品总价</span>
+                            <span id="subtotal-price">¥0.00</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>运费</span>
+                            <span id="shipping-fee">¥0.00</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>优惠券</span>
+                            <span id="discount-amount">-¥0.00</span>
+                        </div>
+
+                        <div class="discount-input">
+                            <input type="text" placeholder="输入优惠码" id="coupon-code">
+                            <button class="btn btn-outline" onclick="applyCoupon()">使用</button>
+                        </div>
+
+                        <div class="summary-row total">
+                            <span>应付总额</span>
+                            <span id="total-price">¥0.00</span>
+                        </div>
+
+                        <button class="btn btn-success" id="checkout-btn" onclick="checkout()">
+                            <i class="fas fa-credit-card"></i> 立即结算
+                        </button>
+
+                        <div style="margin-top: 15px; text-align: center; color: #6c757d; font-size: 0.9rem;">
+                            继续购物 > <a href="product.html" style="color: #007bff; text-decoration: none;">去选购</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧广告位 -->
+        <aside class="ad-sidebar right-sidebar">
+            <div class="ad-banner">
+                <div class="ad-placeholder">广告位</div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-bottom">
+            <p>&copy; 2025 购物商城 版权所有</p>
+            <div class="footer-links">
+                <a href="#">关于我们</a>
+                <a href="#">联系我们</a>
+                <a href="#">隐私政策</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="cart.js"></script>
+</body>
+</html>

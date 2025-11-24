@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服装精选 - 购物商城</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<!-- 顶部栏 -->
+<div class="top-bar">
+    <div class="container">
+        <div class="top-links">
+            <a href="#"><i class="fas fa-user"></i> 登录/注册</a>
+            <a href="#"><i class="fas fa-headset"></i> 客服中心</a>
+            <a href="#"><i class="fas fa-map-marker-alt"></i> 门店查询</a>
+        </div>
+    </div>
+</div>
+
+<!-- 主导航 -->
+<header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <h1><a href="index.html"><i class="fas fa-shopping-bag"></i> 购物商城</a></h1>
+                </div>
+
+                <div class="search-bar">
+                    <form class="search-form">
+                        <input type="text" placeholder="搜索商品..." class="search-input">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="nav-actions">
+                    <a href="cart.html" class="nav-action-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>购物车</span>
+                        <span class="cart-count">0</span>
+                    </a>
+                    <a href="#" class="nav-action-item">
+                        <i class="fas fa-user"></i>
+                        <span>我的账户</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 分类导航 -->
+    <div class="category-nav">
+        <div class="container">
+            <div class="category-menu">
+                <a href="#" class="category-all"><i class="fas fa-bars"></i> 全部分类</a>
+                <a href="index.html">首页</a>
+                <a href="product.html">商品列表</a>
+                <a href="cart.html">购物车</a>
+                <a href="category-electronics.html">手机数码</a>
+                <a href="category-computer.html">电脑办公</a>
+                <a href="category-appliances.html">家用电器</a>
+                <a href="category-furniture.html">生活家具</a>
+                <a href="category-sports.html">运动专区</a>
+                <a href="category-beauty.html">美妆护理</a>
+                <a href="category-kitchen.html">居家厨具</a>
+                <a href="category-daily.html">日用文创</a>
+                <a href="category-clothing.html" class="active">服装精选</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="main-layout">
+        <!-- 左侧广告位 -->
+        <aside class="ad-sidebar left-sidebar">
+            <div class="ad-banner">
+                <div class="ad-placeholder">广告位</div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div>
+                    <h2>服装精选</h2>
+                    <div class="breadcrumb">首页 > 服装精选</div>
+                </div>
+                <div class="product-count">共 <span id="product-count-number">0</span> 件商品</div>
+            </div>
+
+            <!-- 分类商品网格 -->
+            <section class="category-products">
+                <div class="products-grid" id="products-grid">
+                    <!-- 商品会通过JavaScript动态加载 -->
+                </div>
+            </section>
+        </div>
+
+        <!-- 右侧广告位 -->
+        <aside class="ad-sidebar right-sidebar">
+            <div class="ad-banner">
+                <div class="ad-placeholder">广告位</div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<!-- 页脚 -->
+<footer class="main-footer">
+    <div class="container">
+        <div class="footer-bottom">
+            <p>&copy; 2025 购物商城 版权所有</p>
+            <div class="footer-links">
+                <a href="#">关于我们</a>
+                <a href="#">联系我们</a>
+                <a href="#">隐私政策</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="category-clothing.js"></script>
+</body>
+</html>
