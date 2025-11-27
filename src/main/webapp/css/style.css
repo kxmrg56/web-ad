@@ -1,0 +1,353 @@
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+}
+
+/* 容器样式 - 确保足够宽 */
+.container {
+    max-width: 3000px;
+    width: 100%;  /* 改为百分比 */
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* 头部样式 */
+.header {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    padding: 1.5rem 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.logo h1 {
+    font-size: 2.2rem;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 导航栏 - 确保横向排列 */
+.navigation {
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+    padding: 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.nav-list {
+    list-style: none;
+    display: flex !important;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    background: rgba(255,255,255,0.05);
+    width: 100%;
+}
+
+.nav-item {
+    margin: 0;
+    flex: 1;
+    text-align: center;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 16px 0;
+    display: block;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    font-size: 1.1rem;
+}
+
+.nav-item:last-child .nav-link {
+    border-right: none;
+}
+
+.nav-link:hover {
+    background: rgba(52, 152, 219, 0.3);
+    color: #e74c3c;
+}
+
+/* 主内容布局 - 使用Grid确保三栏 */
+.content-sidebar {
+    display: grid !important;
+    grid-template-columns: 260px 1fr 260px !important;
+    gap: 20px !important;
+    margin: 10px 0 !important;
+    width: 100% !important;
+}
+
+/* 左侧广告 */
+.left-ad {
+    grid-column: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+/* 主要内容 */
+.main-content {
+    grid-column: 2;
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+/* 右侧广告 */
+.right-ad {
+    grid-column: 3;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+/* 广告容器样式 */
+.ad-sidebar h3 {
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    border-bottom: 2px solid rgba(255,255,255,0.3);
+    padding-bottom: 12px;
+}
+
+.ad-container {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 12px;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    padding: 20px;
+}
+
+/* 新闻网格布局 */
+.section-title {
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid #3498db;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.news-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.news-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+}
+
+.news-image {
+    height: 220px;
+    overflow: hidden;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.news-card:hover .news-image img {
+    transform: scale(1.1);
+}
+
+.news-content {
+    padding: 20px;
+}
+
+.news-title {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.news-title a {
+    color: #2c3e50;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.news-title a:hover {
+    color: #3498db;
+}
+
+.news-summary {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.news-author {
+    font-weight: 500;
+    color: #3498db;
+}
+
+.news-category {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* 分类标签颜色 */
+.news-category.politics { background: #e74c3c; color: white; }
+.news-category.military { background: #34495e; color: white; }
+.news-category.economy { background: #f39c12; color: white; }
+.news-category.sports { background: #27ae60; color: white; }
+.news-category.tech { background: #3498db; color: white; }
+.news-category.entertainment { background: #9b59b6; color: white; }
+
+/* 底部样式 */
+.footer {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 3rem;
+}
+
+.footer p {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* Header布局 */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+/* 头部搜索框样式 */
+.header-search {
+    margin-left: auto;
+}
+
+.header-search .search-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.header-search .search-input {
+    padding: 10px 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    width: 280px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.header-search .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.header-search .search-input:focus {
+    outline: none;
+    width: 320px;
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.header-search .search-btn {
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+}
+
+.header-search .search-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .header-search {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .header-search .search-form {
+        justify-content: center;
+    }
+
+    .header-search .search-input {
+        width: 200px;
+    }
+
+    .header-search .search-input:focus {
+        width: 240px;
+    }
+}

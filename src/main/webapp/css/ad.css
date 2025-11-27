@@ -1,0 +1,73 @@
+/* 广告相关样式 */
+.ad-sidebar h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+    font-size: 1.1rem;
+}
+
+.ad-container {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 4px;
+    color: #6c757d;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 模拟广告样式 */
+.mock-ad {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.mock-ad h4 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.mock-ad p {
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
+.ad-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+}
+
+.ad-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+}
+
+/* 广告动画效果 */
+@keyframes adFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ad-container .mock-ad {
+    animation: adFadeIn 0.5s ease-out;
+}
