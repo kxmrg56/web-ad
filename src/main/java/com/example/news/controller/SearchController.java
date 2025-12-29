@@ -2,7 +2,9 @@ package com.example.news.controller;
 
 import com.example.news.model.News;
 import com.example.news.service.NewsService;
+import com.example.news.service.NewsServiceImpl;
 import com.example.news.service.CategoryService;
+import com.example.news.service.CategoryServiceImpl;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,8 +13,8 @@ import java.util.List;
 
 @WebServlet("/search")
 public class SearchController extends HttpServlet {
-    private NewsService newsService = new NewsService();
-    private CategoryService categoryService = new CategoryService();
+    private NewsService newsService = new NewsServiceImpl();
+    private CategoryService categoryService = new CategoryServiceImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -20,7 +22,7 @@ public class SearchController extends HttpServlet {
 
         String keyword = request.getParameter("keyword");
 
-        System.out.println("搜索关键词: " + keyword); // 调试信息
+        System.out.println("搜索关键词: " + keyword);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             // 调用搜索服务

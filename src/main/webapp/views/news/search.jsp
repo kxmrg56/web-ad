@@ -19,8 +19,9 @@
                     <c:forEach var="news" items="${searchResults}">
                         <article class="news-item">
                             <div class="news-image">
-                                <img src="${pageContext.request.contextPath}/images/default-news.jpg"
-                                     alt="${news.title}">
+                                <img src="${pageContext.request.contextPath}${news.imageUrl}"
+                                     alt="${news.title}"
+                                     onerror="this.src='${pageContext.request.contextPath}/images/news/default.jpg'">
                             </div>
                             <div class="news-content">
                                 <h3 class="news-title">

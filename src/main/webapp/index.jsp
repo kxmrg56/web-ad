@@ -9,12 +9,12 @@
         <section class="hot-news">
             <h2 class="section-title">热门新闻</h2>
             <div class="news-grid">
-                <!-- 使用动态数据替换硬编码 -->
                 <c:forEach var="news" items="${latestNews}">
                     <article class="news-card">
                         <div class="news-image">
-                            <img src="${pageContext.request.contextPath}/images/default-news.jpg"
-                                 alt="${news.title}">
+                            <img src="${pageContext.request.contextPath}${news.imageUrl}"
+                                 alt="${news.title}"
+                                 onerror="this.src='${pageContext.request.contextPath}/images/news/default.jpg'">
                         </div>
                         <div class="news-content">
                             <h3 class="news-title">

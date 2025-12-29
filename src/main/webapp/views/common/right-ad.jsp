@@ -1,12 +1,25 @@
-<div class="ad-sidebar right-ad">
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8"%>
+<div class="ad-sidebar right-ad" id="right-ad-container">
     <h3>🔥 热门推荐</h3>
-    <div class="ad-container">
-        <div style="text-align: center;">
-            <h4 style="margin-bottom: 10px; font-size: 1.2rem;">大家都在看</h4>
-            <p style="margin-bottom: 15px; opacity: 0.9;">精选热门内容</p>
-            <button style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 20px; border-radius: 20px; cursor: pointer; transition: all 0.3s;">
-                查看详情
-            </button>
+    <div class="ad-content" id="right-ad-content">
+        <div class="ad-loading">
+            <p>加载中...</p>
         </div>
     </div>
 </div>
+
+<script>
+    // 右侧广告初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAd('right');
+    });
+
+    // 使用相同的loadAd函数
+    // 这里不需要重复定义，因为left-ad.jsp已经定义了
+</script>
+
+<style>
+    .right-ad {
+        background: #f9f9f9;
+    }
+</style>
