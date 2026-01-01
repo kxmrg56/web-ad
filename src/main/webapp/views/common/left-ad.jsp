@@ -21,7 +21,7 @@
 
         try {
             // 调用真实的广告API
-            const response = await fetch('http://10.100.164.33:8080/adproj-1.0-SNAPSHOT/ads/api/getAd');
+            const response = await fetch('http://10.100.164.33:8080/adproj-1.0-SNAPSHOT/ads/api/getAd?siteType=news');
 
             if (response.ok) {
                 const adData = await response.json();
@@ -33,7 +33,7 @@
                     <a href="${adData.link}" target="_blank" onclick="trackAdClick('${adData.adId}')">
                         <img src="${adData.image}" alt="${adData.title}"
                              style="width:100%; border-radius:5px;"
-                             onerror="this.src='/images/ads/default.jpg'">
+                             onerror="this.src='${pageContext.request.contextPath}/images/news/default.jpg'">
                     </a>
                     <button onclick="window.open('${adData.link}', '_blank'); trackAdClick('${adData.adId}')">
                         了解更多
@@ -58,7 +58,7 @@
         container.innerHTML = `
         <div class="ad-item">
             <h4>精彩推荐</h4>
-            <img src="/images/ads/default.jpg" alt="默认广告" style="width:100%;">
+            <img src="${pageContext.request.contextPath}/images/news/default.jpg" alt="默认广告" style="width:100%;">
             <button onclick="alert('广告系统维护中')">暂不可用</button>
         </div>
     `;
