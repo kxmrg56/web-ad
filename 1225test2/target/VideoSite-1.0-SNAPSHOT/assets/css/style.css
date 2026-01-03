@@ -1,0 +1,43 @@
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+}
+.navbar {
+    background: #1f1f1f; padding: 15px 30px; display: flex;
+    justify-content: space-between; align-items: center; border-bottom: 1px solid #333;
+}
+.logo { color: #e50914; font-size: 24px; font-weight: bold; text-decoration: none; }
+.btn { background: #e50914; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none;}
+
+/* 分类导航条 */
+.category-bar {
+    background: #121212; padding: 10px 30px; display: flex; gap: 12px;
+    overflow-x: auto; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100;
+}
+.category-bar a {
+    color: #fff; text-decoration: none; padding: 6px 15px; background: #2c2c2c;
+    border-radius: 20px; font-size: 14px; white-space: nowrap; transition: 0.3s;
+}
+.category-bar a.active, .category-bar a:hover { background: #e50914; color: #fff; }
+
+.container { padding: 30px; max-width: 1400px; margin: 0 auto; }
+
+/* 布局：视频网格 */
+.video-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;
+}
+.video-card {
+    background: #1f1f1f; border-radius: 6px; overflow: hidden; cursor: pointer; transition: transform 0.2s;
+}
+.video-card:hover { transform: scale(1.03); z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+.card-content { padding: 12px; }
+.card-title { font-size: 15px; margin: 0 0 5px 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-cat { background: #333; padding: 2px 6px; font-size: 11px; border-radius: 2px; color: #aaa; }
+
+/* 响应式双栏布局 */
+@media (max-width: 768px) {
+    .layout-wrapper { flex-direction: column; }
+    .sidebar { width: 100% !important; margin-top: 20px; }
+}

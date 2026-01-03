@@ -1,0 +1,10 @@
+com\video\model\Video.class
+com\video\servlet\PlayServlet.class
+com\video\servlet\VideoListServlet.class
+com\video\servlet\MediaStreamServlet.class
+com\video\util\DBUtil.class
+com\video\dao\VideoDao.class
+com\video\model\AdConfig.class
+com\video\servlet\VideoUploadServlet.class
+com\video\servlet\AdCheckServlet.class
+com\video\servlet\AdminServlet.class
