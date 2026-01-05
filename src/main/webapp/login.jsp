@@ -8,8 +8,5 @@
     密 码: <input name="password" type="password" required><br>
     <button type="submit">登录系统</button>
 </form>
-<c:if test="${param.error == '1'}">
-    <p style="color:red">用户名或密码错误！</p>
-</c:if>
 </body>
 </html>
