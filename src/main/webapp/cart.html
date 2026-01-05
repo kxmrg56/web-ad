@@ -76,10 +76,11 @@
 
 <main>
     <div class="main-layout">
+
         <!-- 左侧广告位 -->
         <aside class="ad-sidebar left-sidebar">
-            <div class="ad-banner">
-                <div class="ad-placeholder">广告位</div>
+            <div class="ad-banner" id="left-ad">
+                <div class="ad-placeholder">广告加载中...</div>
             </div>
         </aside>
 
@@ -117,7 +118,6 @@
                             <label for="selectAll">全选</label>
                         </div>
                         <div class="batch-actions">
-                            <button class="btn btn-outline" onclick="moveToFavorites()">移入收藏</button>
                             <button class="btn btn-danger" onclick="deleteSelected()">删除选中</button>
                         </div>
                     </div>
@@ -136,16 +136,6 @@
                         <div class="summary-row">
                             <span>运费</span>
                             <span id="shipping-fee">¥0.00</span>
-                        </div>
-
-                        <div class="summary-row">
-                            <span>优惠券</span>
-                            <span id="discount-amount">-¥0.00</span>
-                        </div>
-
-                        <div class="discount-input">
-                            <input type="text" placeholder="输入优惠码" id="coupon-code">
-                            <button class="btn btn-outline" onclick="applyCoupon()">使用</button>
                         </div>
 
                         <div class="summary-row total">
@@ -167,8 +157,8 @@
 
         <!-- 右侧广告位 -->
         <aside class="ad-sidebar right-sidebar">
-            <div class="ad-banner">
-                <div class="ad-placeholder">广告位</div>
+            <div class="ad-banner" id="right-ad">
+                <div class="ad-placeholder">广告加载中...</div>
             </div>
         </aside>
     </div>
@@ -189,5 +179,6 @@
 </footer>
 
 <script src="cart.js"></script>
+<script src="ad-manager.js"></script>
 </body>
 </html>

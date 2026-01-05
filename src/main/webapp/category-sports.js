@@ -1,112 +1,21 @@
-// 运动专区分类商品数据
-const categoryProducts = [
-    {
-        id: 401,
-        name: '专业跑步机',
-        description: '静音电机，多功能显示，可折叠设计，家用健身器材',
-        price: 2999,
-        originalPrice: 3999,
-        stock: 20
-    }
-];
+let categoryProducts = [];
 
-// 页面加载时渲染商品
-document.addEventListener('DOMContentLoaded', function() {
-    renderProducts();
-    updateCartCount();
-});
-
-// 渲染商品列表
-function renderProducts() {
-    // 更新商品数量显示
-    const productCountElement = document.getElementById('product-count-number');
-    if (productCountElement) {
-        productCountElement.textContent = categoryProducts.length;
-    }
-
-    const productsGrid = document.getElementById('products-grid');
-    if (!productsGrid) return;
-
-    productsGrid.innerHTML = '';
-
-    categoryProducts.forEach((product, index) => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <div class="product-image">商品图片</div>
-            <div class="product-info">
-                <h3 class="product-name">${product.name}</h3>
-                <p class="product-description">${product.description}</p>
-                <div class="product-price">
-                    <span class="current-price">¥${product.price}</span>
-                    <span class="original-price">¥${product.originalPrice}</span>
-                </div>
-                <div class="product-stock">库存: ${product.stock}</div>
-                <div class="product-actions">
-                    <input type="number" class="quantity-input" value="1" min="1" max="${product.stock}">
-                    <button class="btn btn-primary" onclick="addToCart(${product.id}, ${index})">
-                        <i class="fas fa-cart-plus"></i> 加入购物车
-                    </button>
-                </div>
-            </div>
-        `;
-        productsGrid.appendChild(productCard);
-    });
-}
-
-// 添加到购物车功能
-function addToCart(productId, productIndex) {
-    const product = categoryProducts.find(p => p.id === productId);
-    if (!product) return;
-
-    const quantityInputs = document.querySelectorAll('.quantity-input');
-    const quantityInput = quantityInputs[productIndex];
-    const quantity = parseInt(quantityInput?.value) || 1;
-
-    if (quantity > product.stock) {
-        alert('库存不足！');
+// 页面加载时从数据库加载商品
+document.addEventListener('DOMContentLoaded', async function() {
+    // 先确保购物车管理器已加载
+    if (!window.shoppingCart) {
+        console.error('购物车管理器未加载，请确保 shopping-cart-manager.js 已引入');
         return;
     }
 
-    // 获取现有购物车数据
-    let cart = JSON.parse(localStorage.getItem('shoppingCart') || '[]');
+    // 初始化购物车
+    await window.initShoppingCart();
 
-    // 检查商品是否已在购物车
-    const existingItem = cart.find(item => item.id === productId);
-    if (existingItem) {
-        existingItem.quantity += quantity;
-    } else {
-        cart.push({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            quantity: quantity,
-            image: '商品图片'
-        });
-    }
+    // 加载商品数据
+    await loadProductsFromDatabase();
+    renderProducts();
 
-    // 保存到localStorage
-    localStorage.setItem('shoppingCart', JSON.stringify(cart));
-
-    // 更新购物车数量显示
-    updateCartCount();
-
-    alert(`已添加 ${quantity} 件 ${product.name} 到购物车！`);
-}
-
-// 更新购物车数量显示
-function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('shoppingCart') || '[]');
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    const cartCountElements = document.querySelectorAll('.cart-count');
-    cartCountElements.forEach(element => {
-        element.textContent = totalItems;
-    });
-}
-
-// 搜索功能
-document.addEventListener('DOMContentLoaded', function() {
+    // 搜索功能
     const searchForm = document.querySelector('.search-form');
     if (searchForm) {
         searchForm.addEventListener('submit', function(e) {
@@ -133,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         categoryProducts.push(...originalProducts);
                         renderProducts();
                         searchInput.value = '';
-                    }, 3000);
+                    }, 60*1000);
                 } else {
                     alert('未找到相关商品！');
                 }
@@ -141,3 +50,107 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// 从数据库加载商品数据
+async function loadProductsFromDatabase() {
+    try {
+        // 调用API获取商品数据 - 注意：category=sports
+        const response = await fetch('/shopping_web_war_exploded/api/products?category=sports');
+
+        if (!response.ok) {
+            throw new Error(`加载失败: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // 将API返回的数据转换为原来的格式
+        categoryProducts = data.map(item => ({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            price: item.price,
+            originalPrice: item.price * 1.15, // 计算原价
+            stock: item.stock || 10,
+            imageUrl: item.imageUrl || '商品图片'
+        }));
+
+        console.log('成功从数据库加载', categoryProducts.length, '个运动商品');
+
+    } catch (error) {
+        console.error('从数据库加载商品失败:', error);
+
+        // 如果API失败，保留原有商品数据作为备用
+        categoryProducts = [
+            {
+                id: 401,
+                name: '专业跑步机',
+                description: '静音电机，多功能显示，可折叠设计，家用健身器材',
+                price: 2999,
+                originalPrice: 3999,
+                stock: 20
+            }
+        ];
+        alert('网络连接失败，显示本地商品数据');
+    }
+}
+
+// 渲染商品列表
+function renderProducts() {
+    // 更新商品数量显示
+    const productCountElement = document.getElementById('product-count-number');
+    if (productCountElement) {
+        productCountElement.textContent = categoryProducts.length;
+    }
+
+    const productsGrid = document.getElementById('products-grid');
+    if (!productsGrid) return;
+
+    productsGrid.innerHTML = '';
+
+    categoryProducts.forEach((product, index) => {
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+    <div class="product-image">
+        <img src="${product.imageUrl}" 
+             alt="${product.name}" 
+             class="product-img"
+             onerror="this.src='https://via.placeholder.com/300x200?text=${encodeURIComponent(product.name)}';">
+    </div>
+    <div class="product-info">
+        <h3 class="product-name">${product.name}</h3>
+        <p class="product-description">${product.description}</p>
+        <div class="product-price">
+            <span class="current-price">¥${product.price}</span>
+            <span class="original-price">¥${product.originalPrice}</span>
+        </div>
+        <div class="product-stock">库存: ${product.stock}</div>
+        <div class="product-actions">
+            <input type="number" class="quantity-input" value="1" min="1" max="${product.stock}">
+            <button class="btn btn-primary" onclick="addToCartHandler(${product.id}, ${index}, '${product.name.replace(/'/g, "\\'")}')">
+                <i class="fas fa-cart-plus"></i> 加入购物车
+            </button>
+        </div>
+    </div>
+`;
+        productsGrid.appendChild(productCard);
+    });
+}
+
+// 添加购物车处理函数
+async function addToCartHandler(productId, productIndex, productName) {
+    const product = categoryProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    const quantityInputs = document.querySelectorAll('.quantity-input');
+    const quantityInput = quantityInputs[productIndex];
+    const quantity = parseInt(quantityInput?.value) || 1;
+
+    if (quantity > product.stock) {
+        alert('库存不足！');
+        return;
+    }
+
+    // 调用全局购物车函数
+    await window.addToCartGlobal(productId, quantity, productName);
+}
