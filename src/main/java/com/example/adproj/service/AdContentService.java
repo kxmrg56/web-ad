@@ -19,38 +19,45 @@ public class AdContentService {
      * @param finalCategory 当前页面识别出的分类
      */
     public AdContent getRecommendedAd(String siteType, String visitorId, String finalCategory) {
-        // 调试日志：确认是谁在请求，站点类型是什么
+        // 调试日志：确认是谁在请求
         System.out.println("[推荐引擎] 正在为访客 [" + visitorId + "] 计算推荐，站点类型: " + siteType + "，当前频道: " + finalCategory);
+
+        AdContent ad = null; // 定义一个变量来接收结果
 
         // --- 策略 A: 历史画像优先 ---
         String topCategory = getTopInterestCategory(visitorId);
-
         if (topCategory != null) {
-            // 原逻辑：如果历史兴趣正好就是当前频道，或者满足随机概率
             if (topCategory.equals(finalCategory) || Math.random() < 0.8) {
-                // 修改点：加入 siteType 过滤素材类型
-                AdContent ad = getAdByCategoryAndType(topCategory, siteType);
+                ad = getAdByCategoryAndType(topCategory, siteType);
                 if (ad != null) {
                     System.out.println("[推荐引擎] 优先推送历史偏好: " + topCategory + " (素材匹配: " + siteType + ")");
-                    return ad;
                 }
             }
         }
 
-        // --- 策略 B: 页面内容匹配 ---
-        if (finalCategory != null && !finalCategory.isEmpty()) {
-            // 修改点：加入 siteType 过滤素材类型
-            AdContent ad = getAdByCategoryAndType(finalCategory, siteType);
+        // --- 策略 B: 页面内容匹配 (如果 A 没匹配到) ---
+        if (ad == null && finalCategory != null && !finalCategory.isEmpty()) {
+            ad = getAdByCategoryAndType(finalCategory, siteType);
             if (ad != null) {
                 System.out.println("[推荐引擎] 匹配当前页面内容: " + finalCategory + " (素材匹配: " + siteType + ")");
-                return ad;
             }
         }
 
-        // --- 策略 C: 全局兜底 ---
-        String fallback = ("shop".equals(siteType)) ? "家用电器" : "军事";
-        System.out.println("[推荐引擎] 触发兜底策略 -> " + fallback);
-        return getAdByCategoryAndType(fallback, siteType);
+        // --- 策略 C: 全局兜底 (如果 A 和 B 都没匹配到) ---
+        if (ad == null) {
+            String fallback = ("shop".equals(siteType)) ? "家用电器" : "军事";
+            System.out.println("[推荐引擎] 触发兜底策略 -> " + fallback);
+            ad = getAdByCategoryAndType(fallback, siteType);
+        }
+
+        // ==========================================
+        // 核心新增：只要最后 ad 不为空，就执行自增
+        // ==========================================
+        if (ad != null) {
+//            incrementViewCount(ad.getId());
+        }
+
+        return ad; // 最后统一返回
     }
 
     /**
@@ -123,7 +130,9 @@ public class AdContentService {
 
     public List<AdContent> getAdsByOwner(Integer ownerId) {
         List<AdContent> list = new ArrayList<>();
-        String sql = "SELECT id, title, image_url, target_url AS link_url, category FROM ad_material";
+        // ✅ 修改SQL，添加view_count字段
+        String sql = "SELECT id, title, image_url, target_url AS link_url, category, view_count FROM ad_material";
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             try (ResultSet rs = ps.executeQuery()) {
@@ -134,10 +143,14 @@ public class AdContentService {
                     ad.setImageUrl(rs.getString("image_url"));
                     ad.setLinkUrl(rs.getString("link_url"));
                     ad.setCategory(rs.getString("category"));
+                    // ✅ 关键：添加浏览量数据
+                    ad.setViewCount(rs.getLong("view_count"));
                     list.add(ad);
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -173,6 +186,34 @@ public class AdContentService {
     }
 
     public void incrementViewCount(int adId) {
-        System.out.println("AD ID: " + adId + " displayed.");
+        // 使用 UPDATE 语句让数据库自增 1
+        String sql = "UPDATE ad_material SET view_count = view_count + 1 WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, adId);
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                System.out.println("[统计日志] 广告 ID: " + adId + " 浏览量 +1");
+            }
+        } catch (SQLException e) {
+            System.err.println("[统计错误] 更新浏览量失败: " + e.getMessage());
+        }
+    }
+
+    // 在 AdContentService.java 中添加
+    public boolean deleteAd(int adId, Integer ownerId) {
+        // 先检查广告是否属于该业主（如果有 owner_id 字段）
+        // String checkSql = "SELECT id FROM ad_material WHERE id = ? AND owner_id = ?";
+
+        String sql = "DELETE FROM ad_material WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, adId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

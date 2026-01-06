@@ -16,6 +16,8 @@ public class AdContent {
 
     private String category;
     private Integer ownerId;
+    private String materialName; // 新增字段
+    private long viewCount;
 
     // Getter & Setter
     public Integer getId() { return id; }
@@ -35,4 +37,10 @@ public class AdContent {
 
     public Integer getOwnerId() { return ownerId; }
     public void setOwnerId(Integer ownerId) { this.ownerId = ownerId; }
+
+    public String getMaterialName() { return materialName; }
+    public void setMaterialName(String materialName) { this.materialName = materialName; }
+
+    public long getViewCount() { return viewCount; }
+    public void setViewCount(long viewCount) { this.viewCount = viewCount; }
 }

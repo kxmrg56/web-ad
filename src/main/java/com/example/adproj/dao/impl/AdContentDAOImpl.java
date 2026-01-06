@@ -55,21 +55,39 @@ public class AdContentDAOImpl implements AdContentDAO {
         ad.setId(rs.getInt("id"));
         ad.setTitle(rs.getString("title"));
 
-        String rawPath = rs.getString("image_url"); // 数据库里存的是 /adproj-1.0-SNAPSHOT/images/xxx.jpg
+        String rawPath = rs.getString("image_url");
 
         if (rawPath != null) {
-            // 【核心修改】去掉数据库路径中重复的 contextPath 部分
-            // 把 "/adproj-1.0-SNAPSHOT/images/..." 变成 "images/..."
-            String cleanPath = rawPath.replace("/adproj-1.0-SNAPSHOT/", "");
-            // 还要去掉开头的斜杠，因为新闻站 JS 已经拼了一个 "/"
+            String cleanPath = rawPath;
+
+            // 处理上传的文件路径
+            if (cleanPath.startsWith("images/") || cleanPath.startsWith("videos/")) {
+                // 上传的文件路径，保持原样
+            }
+            // 如果是旧的路径（包含 /adproj-1.0-SNAPSHOT/）
+            else if (cleanPath.contains("/adproj-1.0-SNAPSHOT/")) {
+                cleanPath = cleanPath.replace("/adproj-1.0-SNAPSHOT/", "");
+            }
+
+            // 去掉开头的斜杠
             if (cleanPath.startsWith("/")) {
                 cleanPath = cleanPath.substring(1);
             }
+
             ad.setImageUrl(cleanPath);
         }
 
         ad.setLinkUrl(rs.getString("link_url"));
         ad.setCategory(rs.getString("category"));
+
+        try {
+            ad.setViewCount(rs.getLong("view_count"));
+        } catch (SQLException e) {
+            // 兼容旧表结构
+            ad.setViewCount(0L);
+        }
+
+
         return ad;
     }
 }
