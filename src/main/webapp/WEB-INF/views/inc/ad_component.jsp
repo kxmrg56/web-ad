@@ -24,7 +24,7 @@
 
 <script>
     (function(){
-        // 定义后端服务器地址
+        // ★★★ 核心配置：指向广告服务器 C同学的 IP ★★★
         const ROOT = "http://10.100.164.33:8080/adproj-1.0-SNAPSHOT";
         const CAT_MAP = {'综艺':'时尚', '科技':'数码', '电影':'电影', '游戏':'游戏', '体育':'体育'};
 
@@ -32,12 +32,12 @@
         let cat = params.get('category') || "电影";
         let channel = CAT_MAP[cat] || "电影";
 
-        // ★★★ 核心修复 1: 自动清除死锁 ID (user_1974) ★★★
+        // 1. 自动清除死锁 ID (user_1974)
         let localVid = localStorage.getItem('global_visitor_id');
         if (localVid === 'user_1974') {
             console.warn("[AdComponent] 检测到死锁 ID (user_1974)，已自动清除。");
             localStorage.removeItem('global_visitor_id');
-            localVid = ""; // 重置为空，强制获取新 ID
+            localVid = "";
         }
 
         // 尝试从 Cookie 获取 (作为备份)
@@ -47,7 +47,7 @@
         // 构建请求 URL
         let url = ROOT + "/ads/api/getAd?siteType=video&channel=" + encodeURIComponent(channel) + "&visitorId=" + vid;
 
-        // ★★★ 核心修复 2: 开启 credentials: 'include' 允许跨域 Cookie ★★★
+        // ★★★ 核心修改：开启 credentials: 'include' 允许跨域 Cookie ★★★
         fetch(url, {
             method: 'GET',
             credentials: 'include'
@@ -57,18 +57,17 @@
                 if(d && d.image) {
                     console.log("[AdComponent] 广告数据:", d);
 
-                    // ★★★ 核心修复 3: 更新 ID 逻辑，防止再次写入坏 ID ★★★
+                    // 2. 更新 ID 逻辑
                     if (d.visitorId) {
                         if (d.visitorId !== 'user_1974') {
                             localStorage.setItem('global_visitor_id', d.visitorId);
                             console.log("[AdComponent] 更新本地 ID:", d.visitorId);
                         } else {
-                            // 如果后端还是硬塞回 user_1974，我们选择忽略它，不存入本地
-                            console.warn("[AdComponent] 后端返回了 user_1974，已忽略，不写入 LocalStorage");
+                            console.warn("[AdComponent] 后端返回了 user_1974，已忽略");
                         }
                     }
 
-                    // 处理图片或视频路径
+                    // 3. 处理图片或视频路径
                     let fullPath = d.image.startsWith('http') ?
                         d.image : encodeURI(ROOT + (d.image.startsWith('/') ? d.image : "/" + d.image));
 
@@ -94,15 +93,11 @@
                     document.getElementById('SIDE_TITLE').innerText = d.title;
 
                     // 链接兜底逻辑
-                    // 1. 优先使用后端返回的 linkUrl
-                    // 2. 如果后端没给 linkUrl，就使用 fullPath (跳转到图片/视频本身)
                     let finalLink = d.linkUrl || fullPath;
 
-                    // 防止空链接导致的刷新
                     if (finalLink && finalLink !== "#") {
                         document.getElementById('SIDE_LINK').href = finalLink;
                     } else {
-                        // 如果连图片地址都没有，才禁用点击
                         document.getElementById('SIDE_LINK').removeAttribute('href');
                     }
 
