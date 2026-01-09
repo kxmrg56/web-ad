@@ -1,159 +1,168 @@
-# 知识库整合：图像处理复习笔记 & 项目文档
-
-本文档整合了关于计算机视觉算法的深度解析（霍夫变换、阈值选取、缺损检测、形态学等）以及互联网广告投放平台的项目文档。
-
----
-
-## 📚 第一部分：图像处理与机器视觉核心考点
-
-### 1. 霍夫变换 (Hough Transform) 的对偶性理解
-
-**核心概念：**
-利用点与线的对偶性，将图像空间中的检测问题转换为参数空间中的峰值寻找问题。
-
-*   **图像空间 (Image Space):** 坐标系为 $(x, y)$。
-*   **参数空间 (Parameter Space):** 坐标系为 $(m, c)$ 或 $(\rho, \theta)$。
-
-**理解口诀：**
-1.  **“图像空间中的一个点，对应参数空间中的一条线（或曲线）”**
-    *   *解释：* 过图像上固定一点 $(x_0, y_0)$ 有无数条直线。每条直线的参数 $(m, c)$ 都不一样。把这无数个 $(m, c)$ 画在参数空间里，就形成了一条轨迹。
-    *   *本质：* 这是一个“投票”的过程。
-2.  **“图像空间中的一条直线，对应参数空间中的一个点”**
-    *   *解释：* 图像上共线的三个点 $P_1, P_2, P_3$，它们在参数空间中对应的三条轨迹会交汇于同一个点。
-    *   *本质：* 这个交点就是这条直线的唯一参数。
-
----
-
-### 2. 阈值分割方法 (Thresholding Methods)
-
-针对直方图双峰特性，确定最佳阈值 $T$ 的几种方法：
-
-#### A. 常用方法对比
-
-| 方法 | 核心思想 | 适用场景 |
-| :--- | :--- | :--- |
-| **极大极小值法** | 寻找直方图波峰之间的**谷底**。 | 直方图非常清晰、典型的双峰，噪声小。 |
-| **大津法 (Otsu)** | 最大化**类间方差** (让前景和背景分得最开)。 | **工程首选**，计算快，无需参数，适合双峰平衡的情况。 |
-| **最小分类误差 (Kittler)** | 基于贝叶斯分类，寻找让**误分类概率最小**的点。 | 假设分布为**高斯分布**时效果通常优于 Otsu。 |
-| **曲线拟合 (GMM)** | 用**高斯混合模型**逼近直方图，解析求交点。 | **重叠严重**、无明显谷底、噪声大但符合高斯分布时。 |
-
-#### B. 深度解析：最小分类误差 vs 曲线拟合
-
-**1. 最小分类误差法 (Kittler-Illingworth)**
-*   **本质：** **搜索法 (Search-based)**。
-*   **逻辑：** “拿着一把刀（阈值 $T$）在直方图上移动。每移动一步，都假设切开的两部分各自服从高斯分布，计算这种切分下的总误差代价 $J(T)$。找到代价最小的位置。”
-*   **几何理解：** 寻找两个高斯分布交界处，使得把背景误判为前景（和反之）的概率总和最小。
-
-**2. 曲线拟合法 (Curve Fitting / GMM)**
-*   **本质：** **建模法 (Model-based)**。
-*   **逻辑：** “先不动刀。假设直方图是由两个隐形的理想高斯曲线叠加而成的。使用 **EM 算法** 调整参数 ($\mu, \sigma, \alpha$)，直到拟合曲线与原始数据重合。最后解析计算这两条曲线的数学交点。”
-*   **通俗比喻：** 面对一座形状不规则的沙丘（直方图），电脑通过计算将其还原为两个标准的圆锥形沙堆（高斯分布），哪怕表面看起来连在一起，也能通过内部模型找到分界线。
-
----
-
-### 3. 缺损检测综合方案 (Defect Detection)
-
-**场景：** 检测产品表面的划痕、裂纹、异物。
-
-#### A. 标准设计流程
-1.  **预处理 (Filtering):**
-    *   使用 **高斯滤波** 去除热噪声（平滑）。
-    *   若有椒盐噪声（黑白点），使用 **中值滤波**。
-2.  **特征/边缘提取 (Feature Extraction):**
-    *   **光滑表面：** 使用 **Sobel**（抗噪好）或 **Canny**（边缘细）算子检测梯度突变。
-    *   **细微划痕：** 使用 **LoG (Laplacian of Gaussian)**，二阶导数对细线更敏感。
-    *   **纹理表面：** 使用 **GLCM (灰度共生矩阵)** 或 **LBP**。
-3.  **分割 (Segmentation):**
-    *   使用 **Otsu (大津法)** 对梯度图或特征图进行二值化。
-4.  **后处理 (Morphology):**
-    *   **闭运算：** 连接断裂的划痕。
-    *   **开运算：** 去除孤立噪点。
-
-#### B. 难点解析：为什么用 GLCM 对比度检测纹理表面？
-*   **原理：** GLCM 统计像素对 $(i, j)$ 的出现概率。
-*   **对比度公式：** $\sum (i-j)^2 \cdot P(i,j)$。
-*   **关键点：** $(i-j)^2$ 是惩罚项。
-    *   **正常纹理：** 邻域像素差异小，$(i-j)^2$ 小，局部对比度低且一致（像开碎石路）。
-    *   **划痕区域：** 黑色背景突然出现白色划痕，差值巨大，平方后数值爆炸，局部对比度激增（像掉进深坑）。
-*   **结论：** 划痕破坏了背景纹理的一致性。
-
----
-
-### 4. 图像处理计算题考点
-
-#### A. 拉普拉斯算子 (Laplacian)
-*   **物理意义：** 二阶微分，各向同性边缘检测。
-*   **4邻域模版 (中心为负)：**
-    $$ \begin{bmatrix} 0 & 1 & 0 \\ 1 & -4 & 1 \\ 0 & 1 & 0 \end{bmatrix} $$
-*   **图像锐化（增强）模版：**
-    *   原理：原图 - 拉普拉斯边缘 = 锐化图。
-    *   **4邻域增强模版 (背诵)：** 中心系数为 5。
-        $$ \begin{bmatrix} 0 & -1 & 0 \\ -1 & 5 & -1 \\ 0 & -1 & 0 \end{bmatrix} $$
-    *   **8邻域增强模版 (背诵)：** 中心系数为 9。
-        $$ \begin{bmatrix} -1 & -1 & -1 \\ -1 & 9 & -1 \\ -1 & -1 & -1 \end{bmatrix} $$
-
-#### B. 数学形态学 (Morphology)
-*   **腐蚀 (Erosion) $\ominus$：**
-    *   **口诀：** “全都要” / “完全容纳”。
-    *   **操作：** 结构元素必须**完全**落在前景内部，中心才为1。
-    *   **效果：** 物体变瘦，去噪点，断开连接。
-*   **膨胀 (Dilation) $\oplus$：**
-    *   **口诀：** “有一个就行” / “击中”。
-    *   **操作：** 结构元素只要**碰到**前景（有交集），中心就为1。
-    *   **效果：** 物体变胖，填补孔洞，连接断裂。
-
----
----
-
-## 💻 第二部分：项目文档 (Project README)
-
-以下是关于 **互联网广告投放生态平台** 的项目说明文档。
-
 # 互联网广告投放生态平台 (Internet Advertising Ecological Platform)
 
-> 基于 Jakarta EE 的全链路广告投放生态系统，涵盖广告中台(Ad Server)、视频流媒体(Video)、新闻资讯(News)与在线电商(Shopping)四大独立子系统。
+> **Project Version:** 1.0.0-SNAPSHOT  
+> **Tech Stack:** Jakarta EE 10, Servlet 6.0, MySQL 8.0, HTML5/ES6+  
+> **Architecture:** Distributed Microservices Simulation (B/S Star Topology)
 
-![Java](https://img.shields.io/badge/Java-Jakarta%20EE-red) ![Servlet](https://img.shields.io/badge/Servlet-6.0-blue) ![MySQL](https://img.shields.io/badge/Database-MySQL%208.0-orange) ![Status](https://img.shields.io/badge/Status-Completed-success)
+## 📖 1. 项目深度解析 (Project Overview)
 
-## 📖 项目简介
+### 1.1 系统背景与设计理念
+在当今的互联网商业环境中，单一的 Web 应用已无法满足复杂的流量变现需求。本项目构建了一个高度仿真的**全链路广告投放生态系统**，打破了传统单体应用的孤岛效应。系统采用**分布式微服务架构思想**，模拟了真实的互联网广告联盟（Ad Network）运作模式。
 
-本项目旨在构建一个模拟真实互联网商业环境的广告投放生态系统。系统打破了单一 Web 应用的限制，采用**分布式微服务架构思想**，由一个核心的**广告管理中台**与三个独立的**媒体端（视频、新闻、购物）**共同组成。
+系统的核心由一个中央控制节点和多个边缘媒体节点组成：
+* **Ad Server (广告管理中台)**：作为生态系统的“大脑”，负责全网流量的分发、广告素材的存储、推荐算法的实时计算以及跨域用户身份的分发。
+* **Media Matrix (前端媒体矩阵)**：由三个业务逻辑完全独立的子系统组成——**视频流媒体站 (Video)**、**新闻资讯站 (News)**、**在线电商站 (Shopping)**。
 
-核心目标是通过统一的广告 API 接口，实现**跨站点的用户身份识别 (Cross-Site Identity)**、**用户兴趣画像追踪 (User Profiling)** 以及基于**上下文的精准广告投放 (Contextual Advertising)**。
+### 1.2 核心技术突破
+通过统一的 RESTful API 接口，本系统实现了以下关键技术指标，这也是本项目区别于普通 Web 项目的核心亮点：
 
-### 🌐 核心组成
-* **Ad Server (广告中台)**: 全网控制塔，负责素材管理、推荐算法计算及跨域身份分发。
-* **Video Site (视频网站)**: 支持 HTTP 206 断点续传的流媒体平台，实现了无缝视频中插广告。
-* **News Site (新闻网站)**: 基于内容上下文（如体育、娱乐）的精准广告匹配平台。
-* **Shopping Site (购物网站)**: 捕捉用户购买意图（兴趣探针），构建高权重用户画像。
+1.  **跨站点的用户身份识别 (Cross-Site Identity Tracking)**：
+    利用 Cookie 和后端算法，在不同域名、不同端口的子系统间（如从购物站跳转到视频站）保持用户身份的唯一性 (`visitor_id`)，实现全网行为追踪。
+2.  **基于上下文的精准广告投放 (Contextual Advertising)**：
+    媒体端通过 API 上报当前页面的内容分类（如“电影”、“数码”），中台根据上下文动态匹配最相关的广告素材，而非随机展示。
+3.  **用户兴趣画像追踪 (User Profiling)**：
+    购物站作为“兴趣探针”，捕捉用户的购买意图并同步至中台数据库。当该用户访问其他站点时，系统会优先推送其感兴趣的商品广告，实现千人千面的推荐效果。
 
 ---
 
-## 🏗 系统架构
+## 🏗 2. 系统架构与拓扑 (System Architecture)
 
-系统采用 **B/S 架构** 与 **星型拓扑结构**。四个子系统逻辑上完全独立，模拟分布式部署，通过 HTTP/REST API 进行通信。
+系统采用经典的 **B/S 架构** 结合 **星型网络拓扑**。四个子系统在逻辑上完全独立，模拟分布式部署环境，通过 HTTP/REST API 进行松耦合通信。
 
 ```mermaid
 graph TD
-    User((User/Browser))
+    User((User / Browser))
     
-    subgraph "Media Clients (前端媒体矩阵)"
-        Video[视频网站 (Video Streaming)]
-        News[新闻网站 (Contextual News)]
-        Shop[购物网站 (E-Commerce)]
+    subgraph "Media Client Matrix (前端媒体矩阵)"
+        Video[视频网站 <br/> (Video Streaming & Ad Player)]
+        News[新闻网站 <br/> (Contextual Content Delivery)]
+        Shop[购物网站 <br/> (E-Commerce & Interest Probe)]
     end
     
-    subgraph "Core Backend (核心中台)"
-        AdServer[广告管理中台 (Ad Server)]
-        DB[(MySQL Database)]
+    subgraph "Core Backend Services (核心中台)"
+        AdServer[广告管理中台 <br/> (Ad Server & Recommendation Engine)]
+        DB[(MySQL Database <br/> User Profiles & Ad Assets)]
     end
     
-    User <--> Video
-    User <--> News
-    User <--> Shop
+    %% 用户交互流
+    User <==> Video
+    User <==> News
+    User <==> Shop
     
-    Video -- "API: Get Ad / Stream" --> AdServer
-    News -- "API: Get Context Ad" --> AdServer
-    Shop -- "API: Sync Interest" --> AdServer
+    %% 数据交互流
+
+
+
+💻 3. 客户端集成指南与核心代码解析 (Client Integration & Code Analysis)本节详细阐述各媒体子系统（视频、新闻、购物）如何接入统一广告 API。为了确保跨域追踪和素材加载的稳定性，请务必严格遵守以下代码规范。3.1 核心 API 协议规范接入时最关键的区别在于 siteType 字段，这直接决定了服务器返回的 MIME 类型（视频流 vs 图片流）以及前端的处理逻辑。配置项📺 视频网站 (Video Site)🛒 购物网站 & 📰 新闻网站 (Shop/News)API 参数siteType=videositeType=shop 或 siteType=news返回素材.mp4 视频文件.jpg / .png 图片文件编码要求强制执行 encodeURI() (处理中文路径)直接拼接服务器前缀即可HTML 载体<video muted autoplay><img> 标签3.2 关键代码模块一：跨站身份 ID 提取为了在不同的子系统间维持同一个用户身份，我们需要从 Cookie 中提取持久化的 visitor_id。所有客户端页面必须包含此函数。JavaScript/**
+ * [Core Function] 获取全站通用的唯一身份标识
+ * * 原理：
+ * 广告中台在首次响应时会写入一个 HttpOnly 之外的 Cookie (visitor_id)。
+ * 本函数通过正则匹配，从 document.cookie 字符串中提取该 ID。
+ * * @returns {string} visitor_id 字符串，若未找到则返回空字符串
+ */
+function getStableId() {
+    // 正则表达式解析：
+    // (^| )       -> 匹配行首或空格（处理 Cookie 拼接时的空格分隔符）
+    // visitor_id= -> 匹配目标 Key
+    // ([^;]*)     -> 捕获组，匹配除分号以外的任意字符（即 Value 部分）
+    let match = document.cookie.match(new RegExp('(^| )visitor_id=([^;]*)'));
+    return match ? match[2] : "";
+}
+3.3 关键代码模块二：视频网站专用接入逻辑场景挑战：中文路径问题：视频素材的文件名通常包含中文（如 /ads/华为手机.mp4），直接放入 src 会导致 URL 乱码或 404 错误。MIME 类型校验：必须确保返回的是视频流而非图片。完整代码实现：JavaScript// 1. 定义广告中台服务器地址 (生产环境需替换为实际域名)
+const server = "[http://10.100.164.33:8080/adproj-1.0-SNAPSHOT](http://10.100.164.33:8080/adproj-1.0-SNAPSHOT)";
+
+// 2. 获取用户身份
+const visitorId = getStableId();
+
+// 3. 定义当前视频内容的分类 (用于上下文推荐)
+// 映射规则：电影->channel=电影; 数码评测->channel=数码
+const channel = "电影"; 
+
+// 4. 发起异步请求
+// 注意：channel 参数可能包含中文，必须使用 encodeURIComponent 进行参数级编码
+fetch(`${server}/ads/api/getAd?siteType=video&channel=${encodeURIComponent(channel)}&visitorId=${visitorId}`, {
+    method: 'GET',
     
+    // [CRITICAL] 跨域凭证配置
+    // 必须设置为 'include'，否则浏览器不会携带跨域 Cookie，导致 server 无法识别老用户，
+    // 从而无法进行基于历史画像的精准推荐。
+    credentials: 'include' 
+})
+.then(res => res.json()) // 解析 JSON 响应
+.then(data => {
+    // 5. 校验数据有效性及文件后缀
+    if (data && data.image && data.image.toLowerCase().endsWith('.mp4')) {
+        
+        // 6. 路径标准化处理
+        // 后端返回的路径可能是 "video/ad.mp4" 或 "/video/ad.mp4"，统一处理为绝对路径
+        const relativePath = data.image.startsWith('/') ? data.image : "/" + data.image;
+        
+        // 7. [CRITICAL] 完整 URL 编码
+        // 使用 encodeURI 对整个 URL 进行编码，它会转义中文字符但保留 URL 结构符号（如 ://）
+        // 例如：.../华为.mp4 -> .../%E5%8D%8E%E4%B8%BA.mp4
+        const fullPath = encodeURI(server + relativePath);
+        
+        // 8. DOM 操作与渲染
+        const videoPlayer = document.getElementById('AD_VIDEO_PLAYER');
+        videoPlayer.src = fullPath;
+        
+        // 自动播放策略：现代浏览器通常要求静音(muted)才能自动播放
+        videoPlayer.muted = true; 
+        videoPlayer.play();
+        
+        document.getElementById('AD_VIDEO_TITLE').innerText = data.title;
+        console.log(`[AdSystem] Video ad loaded: ${data.title}`);
+    }
+})
+.catch(error => {
+    console.error("[AdSystem] Failed to fetch video ad:", error);
+});
+3.4 关键代码模块三：购物与新闻站通用接入逻辑场景挑战：点击跳转：图片广告的核心是引导用户点击，因此除了 src 外，必须正确绑定 href 跳转链接。简单化处理：图片路径通常兼容性较好，无需强制全路径编码，但仍需处理前缀拼接。完整代码实现：JavaScript// 1. 定义服务器与身份
+const server = "[http://10.100.164.33:8080/adproj-1.0-SNAPSHOT](http://10.100.164.33:8080/adproj-1.0-SNAPSHOT)";
+const visitorId = getStableId();
+
+// 2. 定义页面分类 (如新闻站的"科技"版块，或购物站的"数码"类目)
+const channel = "数码"; 
+
+// 3. 发起请求 (siteType 设为 shop 或 news)
+fetch(`${server}/ads/api/getAd?siteType=shop&channel=${encodeURIComponent(channel)}&visitorId=${visitorId}`, {
+    method: 'GET',
+    credentials: 'include' // 同样需要携带 Cookie 以更新用户画像
+})
+.then(res => res.json())
+.then(data => {
+    // 4. 数据校验
+    if (data && data.image) {
+        // 5. 路径拼接
+        // 图片资源通常直接拼接即可被浏览器正确解析
+        const imgPath = data.image.startsWith('/') ? data.image : "/" + data.image;
+        
+        // 6. 渲染图片元素
+        const adImage = document.getElementById('AD_IMG_ID');
+        adImage.src = server + imgPath;
+        adImage.alt = data.title; // 增强可访问性
+        
+        // 7. 渲染标题
+        document.getElementById('AD_TITLE_ID').innerText = data.title;
+        
+        // 8. [Core] 绑定点击跳转链接
+        // data.link 通常指向广告主的落地页 (Landing Page)
+        const adLink = document.getElementById('AD_LINK_ID');
+        if (adLink) {
+            adLink.href = data.link;
+            adLink.target = "_blank"; // 建议新窗口打开
+        }
+        
+        console.log(`[AdSystem] Display ad loaded: ${data.title}, Link: ${data.link}`);
+    }
+})
+.catch(error => {
+    console.error("[AdSystem] Failed to fetch display ad:", error);
+});
+4. ⚙️ 配置与语义映射 (Configuration & Mapping)为了保证推荐算法的准确性，前端必须将各站点的业务分类正确映射为后端 Ad Server 能识别的标准 channel 参数。4.1 语义映射表 (Semantic Mapping Table)前端业务场景 (Frontend Context)后端标准参数 (Backend Channel Param)推荐逻辑说明视频站：动作片、爱情片、院线大片电影推送票务、流媒体会员、影视周边购物/新闻：手机、相机、智能设备、黑科技数码推送新款手机、耳机、科技产品办公：笔记本、鼠标键盘、办公软件电脑办公推送生产力工具、办公耗材体育：NBA、足球联赛、奥运会资讯体育推送运动鞋服、健身器材、能量饮料生活：服装精选、综艺节目、时尚杂志时尚推送美妆、服饰、奢侈品教育：K12、职业培训、网课教育推送课程、文具、教育硬件其他：地方菜系、零食测评、旅游攻略美食 / 旅游推送餐饮优惠券、机票酒店兜底策略：无法分类或映射失败(无)默认返回“军事”或“公益”类广告4.2 注意事项 (Troubleshooting)图片/视频显示不出来 (404/Broken Image)：检查点 1：服务器前缀变量 server 是否遗漏了端口号（如 :8080）或上下文路径（如 /adproj-1.0-SNAPSHOT）。检查点 2：在视频站代码中，确认是否遗漏了 encodeURI()。浏览器对包含中文的 URL 请求极其敏感，未编码通常会导致请求失败。跨站追踪失效 (Identity Sync Failed)：现象：在新闻站刷了大量“数码”新闻，去购物站却依然看到“美妆”广告（无关联推荐）。检查点：检查 Fetch 请求中的 credentials: 'include' 是否缺失。如果缺失，服务器无法读取到同一个 visitor_id，会将每次请求视为新用户。默认分类问题：如果 API 返回的数据总是“军事”或“公益”广告，说明 channel 参数传递有误，或者该 visitor_id 尚无任何历史行为数据，系统触发了冷启动兜底机制。
+    Video -- "API Request (JSON)" --> AdServer
+    News -- "API Request (JSON)" --> AdServer
+    Shop -- "API Request (JSON)" --> AdServer
+    
+    %% 数据库交互
     AdServer <--> DB
