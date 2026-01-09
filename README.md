@@ -1,3 +1,5 @@
+
+```markdown
 # 互联网广告投放生态平台 (Internet Advertising Ecological Platform)
 
 > **Project Version:** 1.0.0-SNAPSHOT  
@@ -14,12 +16,12 @@
 * **Media Matrix (前端媒体矩阵)**：由三个业务逻辑完全独立的子系统组成——**视频流媒体站 (Video)**、**新闻资讯站 (News)**、**在线电商站 (Shopping)**。
 
 ### 1.2 核心技术突破
-通过统一的 RESTful API 接口，本系统实现了以下关键技术指标，这也是本项目区别于普通 Web 项目的核心亮点：
+通过统一的 RESTful API 接口，本系统实现了以下关键技术指标：
 
 1.  **跨站点的用户身份识别 (Cross-Site Identity Tracking)**：
     利用 Cookie 和后端算法，在不同域名、不同端口的子系统间（如从购物站跳转到视频站）保持用户身份的唯一性 (`visitor_id`)，实现全网行为追踪。
 2.  **基于上下文的精准广告投放 (Contextual Advertising)**：
-    媒体端通过 API 上报当前页面的内容分类（如“电影”、“数码”），中台根据上下文动态匹配最相关的广告素材，而非随机展示。
+    媒体端通过 API 上报当前页面的内容分类（如“电影”、“数码”），中台根据上下文动态匹配最相关的广告素材。
 3.  **用户兴趣画像追踪 (User Profiling)**：
     购物站作为“兴趣探针”，捕捉用户的购买意图并同步至中台数据库。当该用户访问其他站点时，系统会优先推送其感兴趣的商品广告，实现千人千面的推荐效果。
 
@@ -50,10 +52,40 @@ graph TD
     User <==> Shop
     
     %% 数据交互流
+    Video -- "API Request (JSON)" --> AdServer
+    News -- "API Request (JSON)" --> AdServer
+    Shop -- "API Request (JSON)" --> AdServer
+    
+    %% 数据库交互
+    AdServer <--> DB
 
+```
 
+---
 
-💻 3. 客户端集成指南与核心代码解析 (Client Integration & Code Analysis)本节详细阐述各媒体子系统（视频、新闻、购物）如何接入统一广告 API。为了确保跨域追踪和素材加载的稳定性，请务必严格遵守以下代码规范。3.1 核心 API 协议规范接入时最关键的区别在于 siteType 字段，这直接决定了服务器返回的 MIME 类型（视频流 vs 图片流）以及前端的处理逻辑。配置项📺 视频网站 (Video Site)🛒 购物网站 & 📰 新闻网站 (Shop/News)API 参数siteType=videositeType=shop 或 siteType=news返回素材.mp4 视频文件.jpg / .png 图片文件编码要求强制执行 encodeURI() (处理中文路径)直接拼接服务器前缀即可HTML 载体<video muted autoplay><img> 标签3.2 关键代码模块一：跨站身份 ID 提取为了在不同的子系统间维持同一个用户身份，我们需要从 Cookie 中提取持久化的 visitor_id。所有客户端页面必须包含此函数。JavaScript/**
+## 💻 3. 客户端集成指南与核心代码解析 (Client Integration & Code Analysis)
+
+本节详细阐述各媒体子系统（视频、新闻、购物）如何接入统一广告 API。为了确保跨域追踪和素材加载的稳定性，请务必严格遵守以下代码规范。
+
+### 3.1 核心 API 协议规范
+
+接入时最关键的区别在于 `siteType` 字段，这直接决定了服务器返回的 MIME 类型（视频流 vs 图片流）以及前端的处理逻辑。
+
+| 配置项 | **📺 视频网站 (Video Site)** | **🛒 购物网站 & 📰 新闻网站 (Shop/News)** |
+| --- | --- | --- |
+| **API 参数** | `siteType=video` | `siteType=shop` 或 `siteType=news` |
+| **返回素材** | `.mp4` 视频文件 | `.jpg` / `.png` 图片文件 |
+| **编码要求** | **强制执行 `encodeURI()**` (处理中文路径) | 直接拼接服务器前缀即可 |
+| **HTML 载体** | `<video muted autoplay>` | `<img>` 标签 |
+
+---
+
+### 3.2 关键代码模块一：跨站身份 ID 提取
+
+为了在不同的子系统间维持同一个用户身份，我们需要从 Cookie 中提取持久化的 `visitor_id`。所有客户端页面必须包含此函数。
+
+```javascript
+/**
  * [Core Function] 获取全站通用的唯一身份标识
  * * 原理：
  * 广告中台在首次响应时会写入一个 HttpOnly 之外的 Cookie (visitor_id)。
@@ -68,7 +100,22 @@ function getStableId() {
     let match = document.cookie.match(new RegExp('(^| )visitor_id=([^;]*)'));
     return match ? match[2] : "";
 }
-3.3 关键代码模块二：视频网站专用接入逻辑场景挑战：中文路径问题：视频素材的文件名通常包含中文（如 /ads/华为手机.mp4），直接放入 src 会导致 URL 乱码或 404 错误。MIME 类型校验：必须确保返回的是视频流而非图片。完整代码实现：JavaScript// 1. 定义广告中台服务器地址 (生产环境需替换为实际域名)
+
+```
+
+---
+
+### 3.3 关键代码模块二：视频网站专用接入逻辑
+
+**场景挑战**：
+
+1. **中文路径问题**：视频素材的文件名通常包含中文（如 `/ads/华为手机.mp4`），直接放入 `src` 会导致 URL 乱码或 404 错误。
+2. **MIME 类型校验**：必须确保返回的是视频流而非图片。
+
+**完整代码实现**：
+
+```javascript
+// 1. 定义广告中台服务器地址 (生产环境需替换为实际域名)
 const server = "[http://10.100.164.33:8080/adproj-1.0-SNAPSHOT](http://10.100.164.33:8080/adproj-1.0-SNAPSHOT)";
 
 // 2. 获取用户身份
@@ -117,7 +164,22 @@ fetch(`${server}/ads/api/getAd?siteType=video&channel=${encodeURIComponent(chann
 .catch(error => {
     console.error("[AdSystem] Failed to fetch video ad:", error);
 });
-3.4 关键代码模块三：购物与新闻站通用接入逻辑场景挑战：点击跳转：图片广告的核心是引导用户点击，因此除了 src 外，必须正确绑定 href 跳转链接。简单化处理：图片路径通常兼容性较好，无需强制全路径编码，但仍需处理前缀拼接。完整代码实现：JavaScript// 1. 定义服务器与身份
+
+```
+
+---
+
+### 3.4 关键代码模块三：购物与新闻站通用接入逻辑
+
+**场景挑战**：
+
+1. **点击跳转**：图片广告的核心是引导用户点击，因此除了 `src` 外，必须正确绑定 `href` 跳转链接。
+2. **简单化处理**：图片路径通常兼容性较好，无需强制全路径编码，但仍需处理前缀拼接。
+
+**完整代码实现**：
+
+```javascript
+// 1. 定义服务器与身份
 const server = "[http://10.100.164.33:8080/adproj-1.0-SNAPSHOT](http://10.100.164.33:8080/adproj-1.0-SNAPSHOT)";
 const visitorId = getStableId();
 
@@ -159,10 +221,47 @@ fetch(`${server}/ads/api/getAd?siteType=shop&channel=${encodeURIComponent(channe
 .catch(error => {
     console.error("[AdSystem] Failed to fetch display ad:", error);
 });
-4. ⚙️ 配置与语义映射 (Configuration & Mapping)为了保证推荐算法的准确性，前端必须将各站点的业务分类正确映射为后端 Ad Server 能识别的标准 channel 参数。4.1 语义映射表 (Semantic Mapping Table)前端业务场景 (Frontend Context)后端标准参数 (Backend Channel Param)推荐逻辑说明视频站：动作片、爱情片、院线大片电影推送票务、流媒体会员、影视周边购物/新闻：手机、相机、智能设备、黑科技数码推送新款手机、耳机、科技产品办公：笔记本、鼠标键盘、办公软件电脑办公推送生产力工具、办公耗材体育：NBA、足球联赛、奥运会资讯体育推送运动鞋服、健身器材、能量饮料生活：服装精选、综艺节目、时尚杂志时尚推送美妆、服饰、奢侈品教育：K12、职业培训、网课教育推送课程、文具、教育硬件其他：地方菜系、零食测评、旅游攻略美食 / 旅游推送餐饮优惠券、机票酒店兜底策略：无法分类或映射失败(无)默认返回“军事”或“公益”类广告4.2 注意事项 (Troubleshooting)图片/视频显示不出来 (404/Broken Image)：检查点 1：服务器前缀变量 server 是否遗漏了端口号（如 :8080）或上下文路径（如 /adproj-1.0-SNAPSHOT）。检查点 2：在视频站代码中，确认是否遗漏了 encodeURI()。浏览器对包含中文的 URL 请求极其敏感，未编码通常会导致请求失败。跨站追踪失效 (Identity Sync Failed)：现象：在新闻站刷了大量“数码”新闻，去购物站却依然看到“美妆”广告（无关联推荐）。检查点：检查 Fetch 请求中的 credentials: 'include' 是否缺失。如果缺失，服务器无法读取到同一个 visitor_id，会将每次请求视为新用户。默认分类问题：如果 API 返回的数据总是“军事”或“公益”广告，说明 channel 参数传递有误，或者该 visitor_id 尚无任何历史行为数据，系统触发了冷启动兜底机制。
-    Video -- "API Request (JSON)" --> AdServer
-    News -- "API Request (JSON)" --> AdServer
-    Shop -- "API Request (JSON)" --> AdServer
-    
-    %% 数据库交互
-    AdServer <--> DB
+
+```
+
+---
+
+## 4. ⚙️ 配置与语义映射 (Configuration & Mapping)
+
+为了保证推荐算法的准确性，前端必须将各站点的业务分类正确映射为后端 Ad Server 能识别的标准 `channel` 参数。
+
+### 4.1 语义映射表 (Semantic Mapping Table)
+
+| **前端业务场景 (Frontend Context)** | **后端标准参数 (Backend Channel Param)** | **推荐逻辑说明** |
+| --- | --- | --- |
+| **视频站**：动作片、爱情片、院线大片 | **`电影`** | 推送票务、流媒体会员、影视周边 |
+| **购物/新闻**：手机、相机、智能设备、黑科技 | **`数码`** | 推送新款手机、耳机、科技产品 |
+| **办公**：笔记本、鼠标键盘、办公软件 | **`电脑办公`** | 推送生产力工具、办公耗材 |
+| **体育**：NBA、足球联赛、奥运会资讯 | **`体育`** | 推送运动鞋服、健身器材、能量饮料 |
+| **生活**：服装精选、综艺节目、时尚杂志 | **`时尚`** | 推送美妆、服饰、奢侈品 |
+| **教育**：K12、职业培训、网课 | **`教育`** | 推送课程、文具、教育硬件 |
+| **其他**：地方菜系、零食测评、旅游攻略 | **`美食` / `旅游**` | 推送餐饮优惠券、机票酒店 |
+| **兜底策略**：无法分类或映射失败 | (无) | **默认返回“军事”或“公益”类广告** |
+
+### 4.2 注意事项 (Troubleshooting)
+
+1. **图片/视频显示不出来 (404/Broken Image)**：
+* **检查点 1**：服务器前缀变量 `server` 是否遗漏了端口号（如 `:8080`）或上下文路径（如 `/adproj-1.0-SNAPSHOT`）。
+* **检查点 2**：在视频站代码中，确认是否遗漏了 `encodeURI()`。浏览器对包含中文的 URL 请求极其敏感，未编码通常会导致请求失败。
+
+
+2. **跨站追踪失效 (Identity Sync Failed)**：
+* **现象**：在新闻站刷了大量“数码”新闻，去购物站却依然看到“美妆”广告（无关联推荐）。
+* **检查点**：检查 Fetch 请求中的 `credentials: 'include'` 是否缺失。如果缺失，服务器无法读取到同一个 `visitor_id`，会将每次请求视为新用户。
+
+
+3. **默认分类问题**：
+* 如果 API 返回的数据总是“军事”或“公益”广告，说明 `channel` 参数传递有误，或者该 `visitor_id` 尚无任何历史行为数据，系统触发了冷启动兜底机制。
+
+
+
+---
+
+```
+
+```
